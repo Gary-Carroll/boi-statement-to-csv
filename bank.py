@@ -1,29 +1,33 @@
+import numpy as np
+import pandas as pd
 import pdfplumber
 import fitz
-import numpy as np
 import tabula
-import pandas as pd
 
 pdf_path = "your_boi_statement.pdf"
 doc = fitz.open(pdf_path)
 
 with pdfplumber.open(pdf_path) as pdf:
-    for i, page in enumerate(pdf.pages): # set top of table to be slightly above first instance of 'BALANCE'
+    for i, page in enumerate(pdf.pages):
+        # set top of table to be slightly above first instance of 'BALANCE'
         y0 = next((int(word['top'] - 3) for word in page.extract_words() if word['text'] == 'BALANCE'), None)
-        
         if y0 is None:
             break
 
-        columns_x = [75, 140, 320, 410, 505, 590]  # left edges of columns and right edge of last column
+        # left edges of columns and right edge of last column
+        columns_x = [75, 140, 320, 410, 505, 590]  
 
+        # y-coordinates of horizontal lines
         row_ys = list(np.arange(y0, 648, 12.1))   # y-coordinates of horizontal lines
         row_ys.append(647) # add bottom line for table
 
         page_fit = doc[i]
 
+        # draw vertical lines
         for x in columns_x:
             page_fit.draw_line((x, y0), (x, 648), width=0.5)
 
+        # draw horizontal lines
         for y in row_ys:
             page_fit.draw_line((columns_x[0], y), (columns_x[-1], y), width=0.5)
 
